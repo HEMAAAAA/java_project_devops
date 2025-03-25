@@ -38,10 +38,10 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        sudo apt-get install -y wget
-                        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-                        echo deb https://aquasecurity.github.io/trivy-repo/deb jammy main | sudo tee -a /etc/apt/sources.list.d/trivy.list
-                        sudo apt-get update && sudo apt-get install -y trivy
+                        apt-get install -y wget
+                        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | apt-key add -
+                        echo deb https://aquasecurity.github.io/trivy-repo/deb jammy main | tee -a /etc/apt/sources.list.d/trivy.list
+                        apt-get update && sudo apt-get install -y trivy
                         trivy image \$DOCKER_USERNAME/java-maven-app:latest
                     '''
                 }
