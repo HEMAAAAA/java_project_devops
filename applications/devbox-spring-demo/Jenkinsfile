@@ -25,11 +25,14 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
+		    dir("$PROJECT_DIR") {
                     sh "docker build -t \$DOCKER_USERNAME/java-maven-app:latest ."
                     sh "docker push \$DOCKER_USERNAME/java-maven-app:latest"
+
                 }
             }
         }
+   }
         
         stage('Security Scan with Trivy') {
             steps {
