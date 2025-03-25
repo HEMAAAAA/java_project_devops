@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_USERNAME = credentials('docker-hub-username')
+        DOCKER_PASSWORD = credentials('docker-hub-password')
+	PROJECT_DIR = "applications/devbox-spring-demo/"
+    }
+    
+    stages {
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Log in to Docker Hub') {
+            steps {
+                script {
+                    sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
+                }
+            }
+        }
+        
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    sh "docker build -t \$DOCKER_USERNAME/java-maven-app:latest ."
+                    sh "docker push \$DOCKER_USERNAME/java-maven-app:latest"
+                }
+            }
+        }
+        
+        stage('Security Scan with Trivy') {
+            steps {
+                script {
+                    sh '''
+                        sudo apt-get install -y wget
+                        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+                        echo deb https://aquasecurity.github.io/trivy-repo/deb jammy main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+                        sudo apt-get update && sudo apt-get install -y trivy
+                        trivy image \$DOCKER_USERNAME/java-maven-app:latest
+                    '''
+                }
+            }
+        }
+    }
+}
+
